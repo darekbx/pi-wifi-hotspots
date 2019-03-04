@@ -1,15 +1,16 @@
 import os
 import time
+import re
 
 class WifiHotspotsDetect:
-	
-	isDebug = True
-	isPi = False
+
+	isDebug = False
+	isPi = True
 	interval = 10
 	devices = { "laptop": "wlp4s0", "pi": "wlan0" }
 	scanCommand = "sudo iw dev {0} scan"
 	fileExtension = ".log"
-	fileFormat = "{0}{1}"
+	fileFormat = "/home/pi/{0}{1}"
 
 	def start(self):
 		device = self.devices['pi'] if self.isPi else self.devices['laptop']
@@ -26,12 +27,34 @@ class WifiHotspotsDetect:
 			file.write(result)
 			
 	def analyze(self):
-		directory = "./"
+		directory = "./data"
 		for filename in os.listdir(directory):
 			if filename.endswith(self.fileExtension):
-				with open(filename) as file:
+				filename = "1551692366.log"
+				with open(os.path.join(directory, filename), 'rb') as file:
 					content = file.readlines()
-					print(len(content))
+					print("{0} --------------------------------".format(filename))
+					self.parseLog(content)
+				break
 
-WifiHotspotsDetect().start()
-#WifiHotspotsDetect().analyze()
+	def parseLog(self, content):
+		accessPoints = {}
+		currentBss = None
+		for line in content:
+			line = line.decode('ISO-8859-1')
+			result = re.search("^BSS.*$", line)
+
+			if currentBss is not None:
+				accessPoints[currentBss].append(line)
+
+			if result is not None:
+				currentBss = line[4:21]
+				accessPoints[currentBss] = [line]
+		
+		for k in accessPoints: 
+			print("{}: {}".format(k, len(accessPoints[k])))
+			
+
+
+#WifiHotspotsDetect().start()
+WifiHotspotsDetect().analyze()
