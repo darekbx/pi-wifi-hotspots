@@ -30,10 +30,8 @@ class WifiHotspotsDetect:
 		directory = "./data"
 		for filename in os.listdir(directory):
 			if filename.endswith(self.fileExtension):
-				filename = "1551692366.log"
 				with open(os.path.join(directory, filename), 'rb') as file:
 					content = file.readlines()
-					print("{0} --------------------------------".format(filename))
 					self.parseLog(content)
 				break
 
@@ -51,10 +49,8 @@ class WifiHotspotsDetect:
 				currentBss = line[4:21]
 				accessPoints[currentBss] = [line]
 		
-		for k in accessPoints: 
-			print("{}: {}".format(k, len(accessPoints[k])))
+		for bssid in accessPoints: 
+			print("BSSID {} has {} properties".format(bssid, len(accessPoints[bssid])))
 			
-
-
 #WifiHotspotsDetect().start()
 WifiHotspotsDetect().analyze()
